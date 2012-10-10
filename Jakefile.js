@@ -11,6 +11,11 @@
 	desc("Lint and test");
 	task("default", ["lint", "test"]);
 
+	desc("Start Testacular server for testing");
+	task("testacular", function() {
+		testacular(["start"], "Could not start Testacular server", complete);
+	}, {async: true});
+
 	desc("Test client code");
 	task("test", function() {
 		testacular(["run"], "Client tests failed (to start server, run 'jake testacular')", function(output) {
