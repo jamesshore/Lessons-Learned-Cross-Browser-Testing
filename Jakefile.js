@@ -3,6 +3,9 @@
 (function () {
 	"use strict";
 
+	// NOTE: This script does not work in Windows due to a Testacular issue:
+	// https://github.com/vojtajina/testacular/issues/91
+
 	var SUPPORTED_BROWSERS = [
 		"IE 8.0",
 		"Chrome 22.0"
