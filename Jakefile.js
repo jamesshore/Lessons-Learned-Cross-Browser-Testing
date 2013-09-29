@@ -20,7 +20,9 @@
 
 	desc("Start Karma server for testing");
 	task("karma", function() {
-		karma(["start"], "Could not start Karma server", complete);
+		sh("node node_modules/karma/bin/karma start", complete, function() {
+			fail("Could not start Karma server");
+		});
 	}, {async: true});
 
 	desc("Test client code");
@@ -60,35 +62,25 @@
 		sh("node", args, errorMessage, callback);
 	}
 
-	function sh(command, args, errorMessage, callback) {
-		console.log("> " + command + " " + args.join(" "));
-
-		// Not using jake.createExec as it adds extra line-feeds into output as of v0.3.7
-		var child = require("child_process").spawn(command, args, { stdio: "pipe" });
-
-		// redirect stdout
+	function sh(oneCommand, successCallback, failureCallback) {
 		var stdout = "";
-		child.stdout.setEncoding("utf8");
-		child.stdout.on("data", function(chunk) {
-			stdout += chunk;
-			process.stdout.write(chunk);
+		var child = jake.createExec(oneCommand);
+		child.on("stdout", function(data) {
+			process.stdout.write(data);
+			stdout += data;
+		});
+		child.on("stderr", function(data) {
+			process.stderr.write(data);
+		});
+		child.on("cmdEnd", function() {
+			successCallback(stdout);
+		});
+		child.on("error", function() {
+			failureCallback(stdout);
 		});
 
-		// redirect stderr
-		var stderr = "";
-		child.stderr.setEncoding("utf8");
-		child.stderr.on("data", function(chunk) {
-			stderr += chunk;
-			process.stderr.write(chunk);
-		});
-
-		// handle process exit
-		child.on("exit", function(exitCode) {
-			if (exitCode !== 0) fail(errorMessage);
-		});
-		child.on("close", function() {      // 'close' event can happen after 'exit' event
-			callback(stdout, stderr);
-		});
+		console.log("> " + oneCommand);
+		child.run();
 	}
 
 	desc("Lint everything");
