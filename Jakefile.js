@@ -14,6 +14,7 @@
 	];
 
 	var lint = require("./build/lint/lint_runner.js");
+	var karma = require("karma");
 
 	desc("Lint and test");
 	task("default", ["lint", "test"]);
@@ -27,40 +28,48 @@
 
 	desc("Test client code");
 	task("test", function() {
-		var config = {};
+		var stdout = new CapturedStdout();
 
-		var output = "";
-		var oldStdout = process.stdout.write;
-		process.stdout.write = function(data) {
-			output += data;
-			oldStdout.apply(this, arguments);
-		};
-
-		require("karma/lib/runner").run(config, function(exitCode) {
-			process.stdout.write = oldStdout;
+		karma.runner.run({}, function(exitCode) {
+			stdout.restore();
 
 			if (exitCode) fail("Client tests failed (to start server, run 'jake karma')");
-			var browserMissing = false;
-			SUPPORTED_BROWSERS.forEach(function(browser) {
-				browserMissing = checkIfBrowserTested(browser, output) || browserMissing;
-			});
+			var browserMissing = checkRequiredBrowsers(SUPPORTED_BROWSERS, stdout);
 			if (browserMissing && !process.env.loose) fail("Did not test all supported browsers (use 'loose=true' to suppress error)");
-			if (output.indexOf("TOTAL: 0 SUCCESS") !== -1) fail("Client tests did not run!");
+			if (stdout.capturedOutput.indexOf("TOTAL: 0 SUCCESS") !== -1) fail("No tests were run!");
 
 			complete();
 		});
 	}, {async: true});
 
-	function checkIfBrowserTested(browser, output) {
+	function checkRequiredBrowsers(requiredBrowsers, stdout) {
+		var browserMissing = false;
+		requiredBrowsers.forEach(function(browser) {
+			browserMissing = lookForBrowser(browser, stdout.capturedOutput) || browserMissing;
+		});
+		return browserMissing;
+	}
+
+	function lookForBrowser(browser, output) {
 		var missing = output.indexOf(browser + ": Executed") === -1;
 		if (missing) console.log(browser + " was not tested!");
 		return missing;
 	}
 
-	function karma(args, errorMessage, callback) {
-		args.unshift("node_modules/karma/bin/karma");
-		sh("node", args, errorMessage, callback);
+	function CapturedStdout() {
+		var self = this;
+		self.oldStdout = process.stdout.write;
+		self.capturedOutput = "";
+
+		process.stdout.write = function(data) {
+			self.capturedOutput += data;
+			self.oldStdout.apply(this, arguments);
+		};
 	}
+
+	CapturedStdout.prototype.restore = function() {
+		process.stdout.write = this.oldStdout;
+	};
 
 	function sh(oneCommand, successCallback, failureCallback) {
 		var stdout = "";
