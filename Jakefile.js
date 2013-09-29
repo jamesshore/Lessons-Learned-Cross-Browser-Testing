@@ -15,9 +15,9 @@
 	desc("Lint and test");
 	task("default", ["lint", "test"]);
 
-	desc("Start Testacular server for testing");
-	task("testacular", function() {
-		testacular(["start"], "Could not start Testacular server", complete);
+	desc("Start Karma server for testing");
+	task("karma", function() {
+		karma(["start"], "Could not start Karma server", complete);
 	}, {async: true});
 
 	desc("Test client code");
@@ -31,10 +31,10 @@
 			oldStdout.apply(this, arguments);
 		};
 
-		require("testacular/lib/runner").run(config, function(exitCode) {
+		require("karma/lib/runner").run(config, function(exitCode) {
 			process.stdout.write = oldStdout;
 
-			if (exitCode) fail("Client tests failed (to start server, run 'jake testacular')");
+			if (exitCode) fail("Client tests failed (to start server, run 'jake karma')");
 			var browserMissing = false;
 			SUPPORTED_BROWSERS.forEach(function(browser) {
 				browserMissing = checkIfBrowserTested(browser, output) || browserMissing;
@@ -52,8 +52,8 @@
 		return missing;
 	}
 
-	function testacular(args, errorMessage, callback) {
-		args.unshift("node_modules/testacular/bin/testacular");
+	function karma(args, errorMessage, callback) {
+		args.unshift("node_modules/karma/bin/karma");
 		sh("node", args, errorMessage, callback);
 	}
 
