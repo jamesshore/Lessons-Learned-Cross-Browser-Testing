@@ -7,10 +7,13 @@
 	// For information, see this Testacular issue:
 	// https://github.com/vojtajina/testacular/issues/91
 
+
+	// To cause the build to fail unless certain browsers are tested, add them to this array:
 	var SUPPORTED_BROWSERS = [
-		"IE 8.0",
-		"Chrome 23.0"
+//		"Chrome 29.0.1547 (Mac OS X 10.8.5)"
 	];
+
+	var lint = require("./build/lint/lint_runner.js");
 
 	desc("Lint and test");
 	task("default", ["lint", "test"]);
@@ -90,15 +93,16 @@
 
 	desc("Lint everything");
 	task("lint", [], function () {
-		var lint = require("./build/lint/lint_runner.js");
+		var passed = lint.validateFileList(browserFilesToTest().toArray(), browserLintOptions(), {});
+		if (!passed) fail("Lint failed");
+	});
 
+	function browserFilesToTest() {
 		var files = new jake.FileList();
 		files.include("src/**/*.js");
 		files.include("Jakefile.js");
-		var options = browserLintOptions();
-		var passed = lint.validateFileList(files.toArray(), options, {});
-		if (!passed) fail("Lint failed");
-	});
+		return files;
+	}
 
 	function browserLintOptions() {
 		return {
