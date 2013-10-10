@@ -3,7 +3,7 @@ Lessons Learned: Cross-Browser Testing with Karma
 
 This repository contains the example code for the above-named [Lessons Learned episode](http://www.letscodejavascript.com/v3/episodes/lessons_learned/6) of James Shore's [Let's Code: Test-Driven JavaScript](http://www.letscodejavascript.com) screencast. Let's Code: Test-Driven JavaScript is a screencast series focused on rigorous, professional JavaScript development.
 
-The source code in this repository demonstrates an automated cross-browser testing using Karma, Mocha, and Expect.js. Files of note:
+The source code in this repository demonstrates automated cross-browser testing using Karma, Mocha, and Expect.js. Files of note:
 
 * `Jakefile.js` contains the automated build.
 * `karma.conf.js` contains the Karma configuration.
@@ -28,7 +28,7 @@ Before building for the first time:
 To build (and test):
 
 1. Run `./jake.sh karma` (Unix/Mac) or `jake karma` (Windows) to start the Karma server.
-2. Start the browsers you want to test and point each one at `http://localhost:8080`.
+2. Start the browsers you want to test and point each one at `http://localhost:9876`.
 3. Run `./jake.sh` (Unix/Mac) or `jake` (Windows) every time you want to build and test.
 
 
